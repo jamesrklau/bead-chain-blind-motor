@@ -1,0 +1,13 @@
+# secrets - NEVER commit these
+secrets.yaml
+esphome/secrets.yaml
+
+# ESPHome build output
+.esphome/
+*.bin
+*.elf
+
+# macOS / editors
+.DS_Store
+.vscode/
+__pycache__/
