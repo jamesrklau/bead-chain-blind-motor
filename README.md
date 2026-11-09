@@ -4,13 +4,13 @@ A DIY motor that opens and closes a **bead-chain roller blind** from **Home Assi
 An ESP32 running ESPHome drives a NEMA17 stepper through a TMC2209 driver, and a
 3D-printed sprocket pulls the blind's existing chain, so nothing on the blind itself is modified.
 
-https://github.com/user-attachments/assets/04f6f5f8-53a8-480c-ac67-adde5940ab2a
+[[https://github.com/user-attachments/assets/04f6f5f8-53a8-480c-ac67-adde5940ab2a](https://github.com/user-attachments/assets/5d26fc04-4414-43c1-ac54-96c5d099e476)](https://github.com/user-attachments/assets/5d26fc04-4414-43c1-ac54-96c5d099e476)
 
 ## Status
 
 - [x] Motor moves from Home Assistant (step / position buttons)
 - [x] 3D-printed chain sprocket works on a 6 mm bead chain
-- [ ] 3D-printed case (version 1 files included, **not yet test-printed**)
+- [x] 3D-printed case (version 1 files included, **not yet test-printed**)
 - [ ] Single Open / Close / position-slider entity (commented-out starter in the YAML)
 - [ ] Single power cable (12 V brick plus a small 12 V to 5 V converter for the ESP32)
 
@@ -88,9 +88,7 @@ Expansion wiring. Green jumper cable V column, yellow jumper cable G column, bro
 3. Flash `esphome/roller-blind.yaml` over USB the first time. Later updates work over Wi-Fi.
 4. In Home Assistant, add the discovered **Roller Blind** device.
 
-<img width="549" height="419" alt="Image" src="https://github.com/user-attachments/assets/397919ff-6b67-4cb0-b7d8-04b4fb5b3154" />
-
-Once the motor is plugged in it no longer says unavailable. 
+<img width="524" height="399" alt="Image" src="https://github.com/user-attachments/assets/c4862456-3f4f-4bc6-b88e-d52ca76b0ad8" />
 
 ## Calibration
 
