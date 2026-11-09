@@ -1,12 +1,22 @@
 # ESP32 + TMC2209 (STEP/DIR mode) bead-chain blind motor, controlled from Home Assistant.
 # The driver's EN pin is wired to ground, so the motor is always energized (see README).
-
-substitutions:
-  open_steps: "13800"   # TODO: set to the step count you measure in the calibration steps (README)
+#
+# Position convention: 0 = fully closed, open_steps = fully open.
+# The position is saved to flash after each move and restored at boot.
 
 esphome:
   name: roller-blind
   friendly_name: Roller Blind
+  on_boot:
+    priority: -100
+    then:
+      # restore the last known position without moving the motor
+      - stepper.report_position:
+          id: blind_motor
+          position: !lambda "return id(saved_pos);"
+      - stepper.set_target:
+          id: blind_motor
+          target: !lambda "return id(saved_pos);"
 
 esp32:
   variant: esp32
@@ -31,20 +41,66 @@ wifi:
 
 captive_portal:
 
+globals:
+  - id: open_steps          # full travel from closed (0) to open; measure it with the calibration steps
+    type: int
+    initial_value: '30948'
+  - id: saved_pos           # last known position, kept across reboots
+    type: int
+    restore_value: yes
+    initial_value: '0'
+
 stepper:
   - platform: a4988          # the TMC2209 is driven as a plain STEP/DIR driver
     id: blind_motor
     step_pin: GPIO18
     dir_pin: GPIO19          # add "inverted: true" (number: GPIO19) if the blind moves the wrong way
-    max_speed: 400 steps/s
-    acceleration: 200 steps/s^2
-    deceleration: 200 steps/s^2
+    max_speed: 600 steps/s   # lower this if the motor hums or skips steps
+    acceleration: 300 steps/s^2
+    deceleration: 300 steps/s^2
+
+# save the position once a move has finished (not on every step, to spare the flash)
+interval:
+  - interval: 2s
+    then:
+      - lambda: |-
+          if (id(blind_motor).current_position == id(blind_motor).target_position &&
+              id(blind_motor).current_position != id(saved_pos)) {
+            id(saved_pos) = id(blind_motor).current_position;
+          }
 
 sensor:
   - platform: template
     name: "Blind Position (steps)"
     lambda: "return id(blind_motor).current_position;"
     update_interval: 1s
+
+cover:
+  - platform: template
+    name: "Roller Blind"
+    device_class: blind
+    has_position: true
+    lambda: |-
+      float p = (float) id(blind_motor).current_position / (float) id(open_steps);
+      if (p < 0) p = 0;
+      if (p > 1) p = 1;
+      return p;
+    open_action:
+      - stepper.set_target:
+          id: blind_motor
+          target: !lambda "return id(open_steps);"
+    close_action:
+      - stepper.set_target:
+          id: blind_motor
+          target: 0
+    stop_action:
+      - stepper.set_target:
+          id: blind_motor
+          target: !lambda "return id(blind_motor).current_position;"
+    position_action:
+      - stepper.set_target:
+          id: blind_motor
+          target: !lambda "return (int32_t) (pos * id(open_steps));"
 
 button:
   - platform: template
@@ -68,35 +124,14 @@ button:
           id: blind_motor
           target: !lambda "return id(blind_motor).current_position;"
 
+  # Use after nudging the blind to its fully closed position (or after a power cut mid-move)
   - platform: template
-    name: "Set Position Zero"
+    name: "Set Closed Here"
     on_press:
       - stepper.report_position:
           id: blind_motor
           position: 0
-
-# Planned (untested): a single Open / Close / position-slider entity.
-# Uncomment once open_steps is set, and test with the blind unhooked first.
-#
-# cover:
-#   - platform: template
-#     name: "Roller Blind"
-#     device_class: blind
-#     has_position: true
-#     lambda: "return (float) id(blind_motor).current_position / ${open_steps};"
-#     open_action:
-#       - stepper.set_target:
-#           id: blind_motor
-#           target: ${open_steps}
-#     close_action:
-#       - stepper.set_target:
-#           id: blind_motor
-#           target: 0
-#     stop_action:
-#       - stepper.set_target:
-#           id: blind_motor
-#           target: !lambda "return id(blind_motor).current_position;"
-#     position_action:
-#       - stepper.set_target:
-#           id: blind_motor
-#           target: !lambda "return (int32_t) (pos * ${open_steps});"
+      - stepper.set_target:
+          id: blind_motor
+          target: 0
+      - lambda: "id(saved_pos) = 0;"
