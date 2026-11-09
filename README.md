@@ -3,8 +3,7 @@
 A DIY motor that opens and closes a **bead-chain roller blind** from **Home Assistant**.
 An ESP32 running ESPHome drives a NEMA17 stepper through a TMC2209 driver, and a
 3D-printed sprocket pulls the blind's existing chain, so nothing on the blind itself is modified.
-
-[[https://github.com/user-attachments/assets/04f6f5f8-53a8-480c-ac67-adde5940ab2a](https://github.com/user-attachments/assets/5d26fc04-4414-43c1-ac54-96c5d099e476)](https://github.com/user-attachments/assets/5d26fc04-4414-43c1-ac54-96c5d099e476)
+https://github.com/user-attachments/assets/af7a024f-4fb0-4b42-8c1f-af7b236911de
 
 ## Status
 
